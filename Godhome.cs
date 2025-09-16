@@ -21,9 +21,6 @@ namespace silksong_godhome_mod;
 public sealed class Godhome : BaseUnityPlugin
 {
     public static Godhome _instance = null!;
-    private string sceneInput = "";
-    private string gateInput  = "";
-    
     public static ConfigEntry<KeyboardShortcut> ToggleMenuKey;
     
     private void Awake()
@@ -141,7 +138,6 @@ public sealed class Godhome : BaseUnityPlugin
             }
         }
     }
-    
     
     [HarmonyPatch(
         typeof(GameManager),
