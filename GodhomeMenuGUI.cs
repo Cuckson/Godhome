@@ -5,6 +5,7 @@ using BepInEx.Configuration;
 using GlobalEnums;
 using UnityEngine;
 using UnityEngine.UI;
+using BepInEx.Logging;
 
 namespace silksong_godhome_mod
 {
@@ -210,14 +211,23 @@ namespace silksong_godhome_mod
             },
         };
 
-        void Awake()
+        // Dont use Awake, this is gonna create problems
+        void NewAwake()
         {
+            
+            Log = BepInEx.Logging.Logger.CreateLogSource("MyPlugin");;
             CreateMenu();
             ToggleMenu(false);
         }
 
+        private bool firstLoad = true;
         void Update()
         {
+            if (firstLoad && Screen.height > 64)
+            {
+                NewAwake();
+                firstLoad = false;
+            }
             if (Godhome.ToggleMenuKey.Value.IsDown() && GameManager.instance.hero_ctrl != null)
             {
                 menuVisible = !menuVisible;
@@ -274,6 +284,7 @@ namespace silksong_godhome_mod
             panelRect.sizeDelta = new Vector2(panelWidth + padding, panelHeight + padding);
         }
         
+        internal static ManualLogSource Log;
         private void CreateMenu()
         {
             float buttonHeight = 50f;
@@ -305,6 +316,7 @@ namespace silksong_godhome_mod
             int totalColumns = Mathf.CeilToInt((float)options.Count / buttonsPerColumn);
             panelRect.sizeDelta = new Vector2(totalColumns * columnSpacing, Screen.height - 40f);
 
+            try{
             foreach (var opt in options)
             {
                 var buttonGO = new GameObject(opt.displayName + "_Button");
@@ -374,6 +386,18 @@ namespace silksong_godhome_mod
                 colors.highlightedColor = new Color(0.4f, 0.4f, 0.4f, 0.9f);
                 colors.pressedColor = new Color(0.1f, 0.1f, 0.1f, 1f);
                 button.colors = colors;
+            }
+            }catch (DivideByZeroException e)
+            {
+                Log.LogError("CRASH: Divisione per zero");
+                Log.LogError(e); // include stack trace
+                Log.LogError("Bottoni: " + buttonsPerColumn);
+                Log.LogError("Colonne: " + totalColumns);
+                Log.LogError("Screen.height: " + Screen.height);
+                Log.LogError("buttonHeight: " + buttonHeight);
+                Log.LogError("padding: " + padding);
+                Log.LogError("(Screen.height - 40) / (buttonHeight + padding): " + (Screen.height - 40) / (buttonHeight + padding));
+
             }
         }
 
